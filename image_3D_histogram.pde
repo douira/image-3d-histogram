@@ -23,11 +23,11 @@ PShape histogram; //PShape (in 3d) to be drawn, created for faster rendering
 boolean displayImage = true; //is true the image this histogram is made from is displayed on screen, toggled by pressing I
 int imageAmount = 0; //counts how many images are available (could be loaded)
 float colorAmountMax = 0; //maximum value of the three channels (rgb or hsb depending on setting) used for scaling this channel group histogramm correctly
-int currentImageId = 11; //what the id of the image currently displayed is (0 index)
+int currentImageId = 0; //what the id of the image currently displayed is (0 index)
 //settings/constants
 float displayScaling = 1.3; //scales both displayElementSizeFactor and histogramSizeFactor together
 float scrollWheelSensitivity = 0.1; //how much scrolling(=zooming) responds
-float displayElementSizeFactor = displayScaling * 6; //scaling of the displayElements
+float displayElementSizeFactor = displayScaling * 20; //scaling of the displayElements
 float histogramSizeFactor = displayScaling * 1; //scaling of the whole histogram
 int displayElementAlpha = 255; //alpha of the displayElements
 color backgroundColor = color(200); //color of the background
