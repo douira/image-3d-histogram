@@ -6,17 +6,8 @@
 //change the background color of it interferes with the colors displayed in the histogram
 //memory usage is roughly cubic in proportion to colorSpacePoints
 //works best when colorSpacePoints is a power of 2 (i.e. 1, 2, 4, 8, 16, 32, 128, 256 ...)
-//N: next image I:toggle show image on screen
-
-//average memory usage on OS X El Capitan: (for values of colorSpacePoints)
-/*
-4: 110MB
-8: 170MB
-16: 600MB
-32: 1.2GB
-64: 4GB
-128: too much (crashes)
-*/
+//N: next image (broken)
+//I:toggle show image on screen
 
 //--import libraries--
 //import peasy cam
