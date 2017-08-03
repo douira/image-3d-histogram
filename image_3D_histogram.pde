@@ -5,7 +5,7 @@
 //HSB countng mode (activated by setting colorCountingMode to false) is slower than the rgb mode
 //change the background color of it interferes with the colors displayed in the histogram
 //memory usage is roughly cubic in proportion to colorSpacePoints
-//works best when colorSpacePoints is a power of 2 (i.e. 1, 2, 4, 8, 16, 32, 128, 256 ...)
+//works best when colorSpacePoints is a power of 2 (i.e. 1, 2, 4, 8, 16, 32, 128, 256)
 //N: next image (broken)
 //I:toggle show image on screen
 
@@ -23,19 +23,18 @@ PShape histogram; //PShape (in 3d) to be drawn, created for faster rendering
 boolean displayImage = true; //is true the image this histogram is made from is displayed on screen, toggled by pressing I
 int imageAmount = 0; //counts how many images are available (could be loaded)
 float colorAmountMax = 0; //maximum value of the three channels (rgb or hsb depending on setting) used for scaling this channel group histogramm correctly
-int currentImageId = 0; //what the id of the image currently displayed is (0 index)
+int currentImageId = 11; //what the id of the image currently displayed is (0 index)
 //settings/constants
 float displayScaling = 1.3; //scales both displayElementSizeFactor and histogramSizeFactor together
 float scrollWheelSensitivity = 0.1; //how much scrolling(=zooming) responds
-float displayElementSizeFactor = displayScaling * 9; //scaling of the displayElements
+float displayElementSizeFactor = displayScaling * 6; //scaling of the displayElements
 float histogramSizeFactor = displayScaling * 1; //scaling of the whole histogram
 int displayElementAlpha = 255; //alpha of the displayElements
 color backgroundColor = color(200); //color of the background
 int sphereDetailFactor = 2; //sphere segment resolution factor, if smaller sphere, resolution used will be smaller
 int[] sphereDetailRange = {6, 30}; //the range of detail the sphere resolution can have
 int[] viewRange = {70, 700}; //view range of the peasy cam view (starts of at the center value of these two)
-boolean colorCountingMode = false; //if true the image will be processed in rgb mode, if false in hsb
-//int imageSize = 500; //size of the image to be retrieved from website(square)
+boolean colorCountingMode = true; //if true the image will be processed in rgb mode, if false in hsb
 int colorSpacePoints = 256; //(should be below 256) amount of color values per channel reduced to from 256 (wich would result in a VERY big array)
 float spaceBetweenPoints = 256 / colorSpacePoints; //sapce between pointsin the reduced color space
 int imageGetMode = 0; //get images from 0: from numbered files in folder name provided, 1: from the URL provided, 2: from all images in folder name provided (skins)
@@ -49,10 +48,11 @@ String imageFolderName = "images/"; //folder name of (/String to append before n
 int imgScaleTo = 300; //to what size small images are scaled to
 int imageScalingThreshold = 100; //if image smaller than this it will be scaled until at least imgScaleTo large
 boolean verboseLogging = true; //if true additional messages will be printed to console
-int maxImageNum = 20; //maximal amount of images to be searched for
+int maxImageNum = 20; //maximal amount of images to be searched for in images folder
 boolean disableDephthWithAlpha = false; //if true and displayElementAlpha is not 255 (there is transparency) then depth testing will be disabled
 float sizeScalingExponent = (float)1 / 4; //exponent for size scaling (chnage the extremity of the difference between large and small cubes)
 int colorAmountThreshold = 1; //how many times a particular color bucket has to be found to be displayed
+int maxBoxAmount = 350000; //maximum allowed amount of boxes to render
 
 //--define utility functions--
 //returns the current time stamp nicey formatted
@@ -87,7 +87,7 @@ void msg(int level, String s) {
     break;
   case 4: //verbose logging message
     //add VERBOSE_LOGGING
-    s = "VERBOSE_LOGGING" + s;
+    s = "VERBOSE" + s;
     break;
   }
 
@@ -273,7 +273,34 @@ void calcHistogram() {
     colorAmountMax = max(colorAmountMax, colorAmounts[v1][v2][v3]);
   }
   
+  msg(0, "optimizing render data");
+  //reset to default of 1
+  colorAmountThreshold = 1;
+  
+  //until not more than maxBoxAmount buckets are at threshold amount
+  int toBeRenderedAmount;
+  do {
+    toBeRenderedAmount = 0;
+    for (int x = 0; x < colorAmounts.length; x ++) {
+      for (int y = 0; y < colorAmounts[0].length; y ++) {
+        for (int z = 0; z < colorAmounts[0][0].length; z ++) {
+          if (colorAmounts[x][y][z] >= colorAmountThreshold) {
+            toBeRenderedAmount ++;
+          }
+        }
+      }
+    }
+    //if still above max
+    if (toBeRenderedAmount > maxBoxAmount) {
+      colorAmountThreshold ++;
+    } else {
+      break;
+    }
+  } while (true);
+  msg(4, "Rendering " + toBeRenderedAmount + " boxes and got to bucket count treshold " + colorAmountThreshold);
+  
   //--create a PShape for faster rendering--
+  msg(0, "generating shape for rendering");
   //for every space (counter) colorAmounts
   for (int x = 0; x < colorAmounts.length; x ++) {
     for (int y = 0; y < colorAmounts[0].length; y ++) {
